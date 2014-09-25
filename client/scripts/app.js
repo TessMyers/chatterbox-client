@@ -95,7 +95,7 @@ var app = {
 
   addRoom: function(roomname) {
 
-    if (roomname === undefined || roomname === "") {
+    if (roomname === undefined || roomname === "" || roomname === null) {
       roomname = "lobby";
     }
 
@@ -130,19 +130,26 @@ $(document).ready(function(){
 
   app.init();
 
-  $('.buttonSend').on('click', function() {
+  // $('.buttonSend').on('click', function() {
+  //   app.handleSubmit();
+  //   $('.draft').val('');
+  //   return false;
+  // });
+
+  // $('.draft').keypress(function (e) {
+  //   if (e.which == 13) {
+  //     app.handleSubmit();
+  //     $('.draft').val('');
+  //     return false;
+  //   }
+  // });
+
+  $('.entryBox').submit(function(e){
+    e.preventDefault();
     app.handleSubmit();
     $('.draft').val('');
-    return false;
-  });
-
-  $('.draft').keypress(function (e) {
-    if (e.which == 13) {
-      app.handleSubmit();
-      $('.draft').val('');
-      return false;
-    }
-  });
+    // return false;
+  })
 
   $('body').on('click', '#friend', function() {
     var thatUser = this.parentElement.parentElement.children[0].textContent;

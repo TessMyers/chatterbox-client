@@ -110,9 +110,9 @@ form input[type=text] {
 }
 
 .buttonSend {
-    font-size:16px;
-    padding:10px 10px;
-    vertical-align:12px;
+    font-size:14px;
+    padding:8px 8px;
+    vertical-align: auto;
 }
 
 .chat:hover {
