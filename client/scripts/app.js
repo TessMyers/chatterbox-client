@@ -9,7 +9,7 @@ var app = {
   server: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
 
   init: function() {
-    this.fetch();
+    setInterval(this.fetch(),1000);
   },
 
   send: function(message) {
@@ -72,7 +72,7 @@ var app = {
 
   handleSubmit: function() {
     var msg = {
-      username: USER,
+      username: "I AM COMPOOPER",
       text: $('.draft').val(),
       roomname: 'abattoir'
     };
@@ -87,7 +87,6 @@ var app = {
 
 $(document).ready(function(){
   var USER = location.search.substring(84);
-  console.log('user supposed ot be proingint')
   console.log(USER);
   app.init();
 
