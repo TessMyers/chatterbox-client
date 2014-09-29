@@ -1,15 +1,23 @@
-// YOUR CODE HERE:
-var app = {
-  init: function () {},
-  send: function () {}
-};
 
 var app = {
 
   server: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
 
+  friends: [],
+
+  banned: [],
+
+  rooms: [],
+
+  messageOptions: '<div id="options"> <button class="choices" id="friend">Add friend</button> <button class="choices" id="ban">Block</button> </div>',
+
   init: function() {
-    setInterval(this.fetch(),1000);
+
+    var that = this;
+
+    setInterval(function(){
+      that.fetch();
+    },2000);
   },
 
   send: function(message) {
@@ -23,13 +31,28 @@ var app = {
         console.log('chatterbox: Message sent');
       },
       error: function (data) {
-        // see: https://developer.mozilla.org/en-US/docs/Web/API/console.error
         console.error('chatterbox: Failed to send message');
       }
     });
   },
 
+  handleData: function(data, targetUsername) {
+    targetUsername = targetUsername || null;
+
+    app.clearMessages();
+
+    for (var i = 0; i < data.results.length; i++) {
+      if (data.results[i].username === targetUsername) {
+        app.addMessage(data.results[i]);
+      } else if (targetUsername === null) {
+        app.addMessage(data.results[i]);
+        app.addRoom(data.results[i].roomname);
+      }
+    }
+  },
+
   fetch: function() {
+
     $.ajax({
 
       url: this.server,
@@ -37,13 +60,10 @@ var app = {
       contentType: 'application/json',
       dataType: 'json',
       success: function (data) {
-        for (var i = 0; i < data.results.length; i++) {
-          app.addMessage(data.results[i]);
-        }
+        app.handleData(data);
         console.log('chatterbox: Message fetched');
       },
       error: function (data) {
-        // see: https://developer.mozilla.org/en-US/docs/Web/API/console.error
         console.error('chatterbox: Failed to fetch message');
       }
     });
@@ -53,26 +73,45 @@ var app = {
     var username;
     var text;
 
+
     if (message.username === undefined || message.text === undefined) {
-      username = "I'm bad at this";
-      text = "Also I don't know how to this. Halp";
+      username = "undefined";
+      text = "undefined";
     } else {
       username = message.username.replace(/[^a-z,.!?' ]+/gi, " ");
       text = message.text.replace(/[^a-z,.!?' ]+/gi, ", I am a dick");
     }
-    var $toSend = '<div class="chat">' + username + ": " + text + '</div>';
+    if (app.friends.indexOf(username) !== -1) {
+      username =  "<b>" + username + "</b>";
+      text = "<b>" + text + "</b>";
+    }
+    var $toSend = '<div class="chat"><a class="username">' + username + '</a>: ' + text + app.messageOptions + '</div>';
     $('#chats').append($toSend);
   },
 
   clearMessages: function() {
-    $('#chats').remove(); // can also use .html('')
+    $('.chat').remove();
   },
 
-  addRoom: function() {},
+  addRoom: function(roomname) {
+
+    if (roomname === undefined || roomname === "" || roomname === null) {
+      roomname = "lobby";
+    }
+
+    roomname = roomname.replace(/[^a-z,.!?' ]+/gi, "");
+
+    if (app.rooms.indexOf(roomname) === -1) {
+      $('#chatrooms').append('<li>' + roomname + '</li>');
+      app.rooms.push(roomname);
+    }
+
+  },
 
   handleSubmit: function() {
     var msg = {
-      username: "I AM COMPOOPER",
+
+      username: location.search.substring(10),
       text: $('.draft').val(),
       roomname: 'abattoir'
     };
@@ -80,18 +119,43 @@ var app = {
   },
 
 
-  addFriend: function() {}
+  // addFriend: function() {
 
+  //   //NO FRIENDS :(
+  // }
 
 };
 
+
 $(document).ready(function(){
-  var USER = location.search.substring(84);
+
+ var USER = location.search.substring(84);
   console.log(USER);
   app.init();
 
 
-  $('.buttonSend').on('click', function() {
+  app.init();
+
+  $('.entryBox').submit(function(e){
+    e.preventDefault();
     app.handleSubmit();
+    $('.draft').val('');
+  })
+
+  $('body').on('click', '#friend', function() {
+    var thatUser = this.parentElement.parentElement.children[0].textContent;
+    if (app.friends.indexOf(thatUser) === -1) {
+      app.friends.push(thatUser);
+    }
   });
-})
+
+  $('body').on('click', '#ban', function() {
+    var thatUser = this.parentElement.parentElement.children[0].textContent;
+    // TODO
+    // deal with overlap between banned list and friends list
+    if (app.banned.indexOf(thatUser) === -1) {
+      app.banned.push(thatUser);
+    }
+  });
+
+});
